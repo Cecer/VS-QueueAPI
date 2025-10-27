@@ -1,0 +1,14 @@
+{
+    "type": "code",
+    "modid": "queueapi",
+    "name": "Queue API",
+    "description" : "Provides an API for other mods to interact with the player join queue.",
+    "authors": ["Cecer"],
+    "version": "1.0.0",
+    "dependencies": { 
+        "game": "1.21.5"
+    },
+    "side": "Server",
+    "requiredOnServer": true,
+    "requiredOnClient": false
+}
