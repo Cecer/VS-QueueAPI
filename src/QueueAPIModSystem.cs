@@ -16,6 +16,10 @@ public class QueueAPIModSystem : ModSystem
     private HarmonyLib.Harmony? _harmony;
     private ICoreServerAPI _api;
     
+    /// <summary>
+    /// The current queue handler. 
+    /// Setting this to a new handler will reset the queue and cause all queuing players to be kicked. As such, this should probably only be done during server initialisation.
+    /// </summary>
     public IJoinQueueHandler Handler
     {
         get => InternalHooks.Handler;

@@ -28,7 +28,7 @@ public static class CmdGlobalListPatches
     private static IEnumerable<CodeInstruction> listClients_ReplaceQueuePositionCalculation(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
         /*
-            Because the code we want to patch calls a lambda, the patch is more complicated than it would otherwise be.
+            Because the code we want to patch calls a lambda, the patch is more complicated than it would otherwise be as we check the lambda body too.
             
             FindIndex call:
             IL_0087: ldarg.0      // this
@@ -90,7 +90,7 @@ public static class CmdGlobalListPatches
 
                 if (instrs[4].OpCode != Mono.Cecil.Cil.OpCodes.Ldfld) return false;
                 
-                if (!((FieldReference)instrs[4].Operand).Matches_Fixed(lambdaType.Field("client"))) return false;
+                if (!((FieldReference)instrs[4].Operand).Matches(lambdaType.Field("client"))) return false;
 
                 if (instrs[5].OpCode != Mono.Cecil.Cil.OpCodes.Ldfld) return false;
                 if (!((FieldReference)instrs[5].Operand).Matches(typeof(ConnectedClient).Field(nameof(ConnectedClient.Id)))) return false;

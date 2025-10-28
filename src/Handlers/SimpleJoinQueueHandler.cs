@@ -10,61 +10,72 @@ namespace QueueAPI.Handlers;
 /// <summary>
 /// While rewritten for clarity, this handler implementation is functionality equivalent to the vanilla implementation in 1.21.5.
 /// </summary>
-/// <param name="server"></param>
-public class SimpleJoinQueueHandler(ServerMain server) : IJoinQueueHandler
+public class SimpleJoinQueueHandler : IJoinQueueHandler
 {
-    public virtual int JoinedPlayerCount => server.Clients.Count - server.ConnectionQueue.Count;
-    public virtual int QueueSize => server.ConnectionQueue.Count;
+    private readonly ServerMain _server;
 
-    public virtual int GetClientQueueIndex(int clientId) => server.ConnectionQueue.FindIndex(c => c.Client.Id == clientId);
+    /// <summary>
+    /// While rewritten for clarity, this handler implementation is functionality equivalent to the vanilla implementation in 1.21.5.
+    /// </summary>
+    public SimpleJoinQueueHandler(ServerMain server)
+    {
+        _server = server;
+    }
+
+    public SimpleJoinQueueHandler(ICoreServerAPI api) : this(api.GetInternalServer()) { }
+
+    public virtual int JoinedPlayerCount => _server.Clients.Count - _server.ConnectionQueue.Count;
+
+    public virtual int QueueSize => _server.ConnectionQueue.Count;
+
+    public virtual int GetClientQueueIndex(int clientId) => _server.ConnectionQueue.FindIndex(c => c.Client.Id == clientId);
 
     public virtual QueuedClient? GetClientAtQueueIndex(int index)
     {
-        lock (server.ConnectionQueue)
+        lock (_server.ConnectionQueue)
         {
-            if (server.ConnectionQueue.Count < index)
+            if (_server.ConnectionQueue.Count < index)
             {
-                return server.ConnectionQueue[index];
+                return _server.ConnectionQueue[index];
             }
 
             return null;
         }
     }
 
-
     public virtual IJoinQueueHandler.IPlayerConnectResult OnPlayerConnect(Packet_ClientIdentification clientIdentPacket, ConnectedClient client, string entitlements)
     {
-        if (server.Clients.Count - 1 < server.Config.MaxClients)
+        if (_server.Clients.Count - 1 < _server.Config.MaxClients)
         {
             // Server has capacity
             return new IJoinQueueHandler.IPlayerConnectResult.Join();
         }
 
-        var playerData = server.PlayerDataManager.GetOrCreateServerPlayerData(client.SentPlayerUid);
-        if (playerData.HasPrivilege(Privilege.controlserver, server.Config.RolesByCode) && playerData.HasPrivilege("ignoremaxclients", server.Config.RolesByCode))
+        var playerData = _server.PlayerDataManager.GetOrCreateServerPlayerData(client.SentPlayerUid);
+        if (playerData.HasPrivilege(Privilege.controlserver, _server.Config.RolesByCode) && playerData.HasPrivilege("ignoremaxclients", _server.Config.RolesByCode))
         {
             // Privilege based bypassing
             return new IJoinQueueHandler.IPlayerConnectResult.Join();
         }
 
-        if (server.Config.MaxClientsInQueue <= 0)
+        if (_server.Config.MaxClientsInQueue <= 0)
         {
             // Queue is disabled
-            return new IJoinQueueHandler.IPlayerConnectResult.Disconnect(Lang.Get("Server is full ({0} max clients)", server.Config.MaxClients));
+            return new IJoinQueueHandler.IPlayerConnectResult.Disconnect(Lang.Get("Server is full ({0} max clients)", _server.Config.MaxClients));
         }
 
-        if (server.ConnectionQueue.Count >= server.Config.MaxClientsInQueue)
+        if (_server.ConnectionQueue.Count >= _server.Config.MaxClientsInQueue)
         {
             // Queue is full
-            return new IJoinQueueHandler.IPlayerConnectResult.Disconnect(Lang.Get("Server is full ({0} max clients)", server.Config.MaxClients));
+            return new IJoinQueueHandler.IPlayerConnectResult.Disconnect(Lang.Get("Server is full ({0} max clients)", _server.Config.MaxClients));
         }
 
         int position;
-        lock (server.ConnectionQueue)
+        lock (_server.ConnectionQueue)
         {
             // Add the player to the queue
-            server.ConnectionQueue.Add(new QueuedClient(client, clientIdentPacket, entitlements));
-            position = server.ConnectionQueue.Count;
+            _server.ConnectionQueue.Add(new QueuedClient(client, clientIdentPacket, entitlements));
+            position = _server.ConnectionQueue.Count;
         }
 
         ServerMain.Logger.Notification($"Player {clientIdentPacket.Playername} was put into the connection queue at position {position}");
@@ -75,13 +86,13 @@ public class SimpleJoinQueueHandler(ServerMain server) : IJoinQueueHandler
 
     public virtual QueuedClient? GetNextQueuedClient(bool remove)
     {
-        lock (server.ConnectionQueue)
+        lock (_server.ConnectionQueue)
         {
-            var queuedClient = server.ConnectionQueue.FirstOrDefault(null as QueuedClient);
+            var queuedClient = _server.ConnectionQueue.FirstOrDefault(null as QueuedClient);
             if (queuedClient != null && remove)
             {
                 // Remove the next client from the queue.
-                server.ConnectionQueue.RemoveAll(e => e.Client.Id == queuedClient.Client.Id);
+                _server.ConnectionQueue.RemoveAll(e => e.Client.Id == queuedClient.Client.Id);
             }
             return queuedClient;
         }
@@ -89,29 +100,29 @@ public class SimpleJoinQueueHandler(ServerMain server) : IJoinQueueHandler
     
     public virtual void OnPlayerDisconnect(ConnectedClient disconnectingClient)
     {
-        if (server.Config.MaxClientsInQueue <= 0 || server.stopped)
+        if (_server.Config.MaxClientsInQueue <= 0 || _server.stopped)
         {
             // Queue is disabled or server has been stopped
             return;
         }
 
         List<QueuedClient> joiningClients;
-        lock (server.ConnectionQueue)
+        lock (_server.ConnectionQueue)
         {
             if (disconnectingClient.State == EnumClientState.Queued)
             {
                 // Client was in the queue. Remove them from it.
-                server.ConnectionQueue.RemoveAll(e => e.Client.Id == disconnectingClient.Id);
+                _server.ConnectionQueue.RemoveAll(e => e.Client.Id == disconnectingClient.Id);
             }
 
-            var queueSize = server.ConnectionQueue.Count;
+            var queueSize = _server.ConnectionQueue.Count;
             if (queueSize == 0)
             {
                 // Nobody is in the queue. Nothing to do.
                 return;
             }
 
-            var availableSlots = server.Config.MaxClients - server.Clients.Count;
+            var availableSlots = _server.Config.MaxClients - _server.Clients.Count;
             if (availableSlots <= 0)
             {
                 // No room for anybody to join. Nothing to do.
@@ -137,7 +148,7 @@ public class SimpleJoinQueueHandler(ServerMain server) : IJoinQueueHandler
         // Actually join the clients that we now have capacity for.
         foreach (var joiningClient in joiningClients)
         {
-            server.FinalizePlayerIdentification(joiningClient.Identification, joiningClient.Client, joiningClient.Entitlements);
+            _server.FinalizePlayerIdentification(joiningClient.Identification, joiningClient.Client, joiningClient.Entitlements);
         }
 
         SendPositionUpdate();
@@ -146,35 +157,23 @@ public class SimpleJoinQueueHandler(ServerMain server) : IJoinQueueHandler
     public virtual void SendPositionUpdate()
     {
         // We clone the collection to an array so that we do not need to worry about locking while sending queue position updates to clients in the queue.
-        var queuedClients = server.ConnectionQueue.ToArray();
+        var queuedClients = _server.ConnectionQueue.ToArray();
             
         for (var index = 0; index < queuedClients.Length; index++)
         {
-            server.SendPacket(queuedClients[index].Client.Id, new Packet_Server
-            {
-                Id = 82,
-                QueuePacket = new Packet_QueuePacket
-                {
-                    Position = index + 1
-                }
-            });
+            ((ICoreServerAPI) _server.Api).SendQueuePositionUpdate(queuedClients[index].Client.Id, index);
         }
     }
-
-    public virtual void OnPlayerJoined(string playerUid, int clientId)
-    {
-        // Nothing by default
-    }
-
+    
     public virtual void Reset()
     {
-        lock (server.ConnectionQueue)
+        lock (_server.ConnectionQueue)
         {
-            foreach (var queuedClient in server.ConnectionQueue.ToArray())
+            foreach (var queuedClient in _server.ConnectionQueue.ToArray())
             {
-                server.DisconnectPlayer(queuedClient.Client, null, "Join queue reset");
+                _server.DisconnectPlayer(queuedClient.Client, null, "Join queue reset");
             }
-            server.ConnectionQueue.Clear();
+            _server.ConnectionQueue.Clear();
         }
     }
 }
