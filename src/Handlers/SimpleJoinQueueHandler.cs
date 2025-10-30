@@ -125,7 +125,8 @@ public class SimpleJoinQueueHandler : IJoinQueueHandler
             var availableSlots = _server.Config.MaxClients - JoinedPlayerCount;
             if (availableSlots <= 0)
             {
-                // No room for anybody to join. Nothing to do.
+                // Still no room for anybody to join. Update their position at least.
+                SendPositionUpdate();
                 return;
             }
 
