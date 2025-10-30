@@ -103,6 +103,7 @@ public interface IJoinQueueHandler
         {
             public void Handle(ServerMain server, Packet_ClientIdentification clientIdentPacket, ConnectedClient client, string entitlements)
             {
+                client.State = EnumClientState.Queued;
                 var queuePacket = new Packet_Server
                 {
                     Id = 82,
