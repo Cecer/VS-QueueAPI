@@ -45,7 +45,7 @@ public class SimpleJoinQueueHandler : IJoinQueueHandler
 
     public virtual IJoinQueueHandler.IPlayerConnectResult OnPlayerConnect(Packet_ClientIdentification clientIdentPacket, ConnectedClient client, string entitlements)
     {
-        if (JoinedPlayerCount < _server.Config.MaxClients)
+        if (JoinedPlayerCount - 1 < _server.Config.MaxClients)
         {
             // Server has capacity
             return new IJoinQueueHandler.IPlayerConnectResult.Join();
