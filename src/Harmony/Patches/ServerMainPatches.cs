@@ -137,8 +137,8 @@ public static class ServerMainPatches
         matcher.ThrowIfNotMatch("Could not inject OnPlayerJoined call into ServerMain.SendServerIdentification");
 
         matcher.Insert(
-            new CodeMatch(OpCodes.Ldarg_1),
-            new CodeMatch(OpCodes.Callvirt, typeof(ServerPlayer).Property(nameof(ServerPlayer.PlayerUID)).GetGetMethod()),
+            new CodeInstruction(OpCodes.Ldarg_1),
+            new CodeInstruction(OpCodes.Callvirt, typeof(ServerPlayer).Property(nameof(ServerPlayer.PlayerUID)).GetGetMethod()),
             new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(InternalHooks), nameof(InternalHooks.OnPlayerJoined)))
         );
 
