@@ -45,7 +45,7 @@ public class SimpleJoinQueueHandler : IJoinQueueHandler
 
     public virtual IJoinQueueHandler.IPlayerConnectResult OnPlayerConnect(Packet_ClientIdentification clientIdentPacket, ConnectedClient client, string entitlements)
     {
-        if (_server.Clients.Count - 1 < _server.Config.MaxClients)
+        if (JoinedPlayerCount < _server.Config.MaxClients)
         {
             // Server has capacity
             return new IJoinQueueHandler.IPlayerConnectResult.Join();
@@ -64,7 +64,7 @@ public class SimpleJoinQueueHandler : IJoinQueueHandler
             return new IJoinQueueHandler.IPlayerConnectResult.Disconnect(Lang.Get("Server is full ({0} max clients)", _server.Config.MaxClients));
         }
 
-        if (_server.ConnectionQueue.Count >= _server.Config.MaxClientsInQueue)
+        if (QueueSize >= _server.Config.MaxClientsInQueue)
         {
             // Queue is full
             return new IJoinQueueHandler.IPlayerConnectResult.Disconnect(Lang.Get("Server is full ({0} max clients)", _server.Config.MaxClients));
@@ -75,7 +75,7 @@ public class SimpleJoinQueueHandler : IJoinQueueHandler
         {
             // Add the player to the queue
             _server.ConnectionQueue.Add(new QueuedClient(client, clientIdentPacket, entitlements));
-            position = _server.ConnectionQueue.Count;
+            position = QueueSize;
         }
 
         ServerMain.Logger.Notification($"Player {clientIdentPacket.Playername} was put into the connection queue at position {position}");
@@ -115,7 +115,7 @@ public class SimpleJoinQueueHandler : IJoinQueueHandler
                 _server.ConnectionQueue.RemoveAll(e => e.Client.Id == disconnectingClient.Id);
             }
 
-            var queueSize = _server.ConnectionQueue.Count;
+            var queueSize = QueueSize;
             if (queueSize == 0)
             {
                 // Nobody is in the queue. Nothing to do.
