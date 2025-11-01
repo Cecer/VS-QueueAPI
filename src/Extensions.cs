@@ -17,8 +17,8 @@ public static class Extensions
     {
         // The api.World instance is actually the ServerMain instance (at least in 1.21.5) 
         return (ServerMain) api.World; 
-    }  
-    
+    }
+
     /// <summary>
     /// A convenience method for sending a queue position update to a specific client.
     /// </summary>
@@ -28,17 +28,27 @@ public static class Extensions
     public static void SendQueuePositionUpdate(this ICoreServerAPI api, int clientId, int position)
     {
         var server = api.GetInternalServer();
-        
+        SendQueuePositionUpdate(server, clientId, position);
+    }
+
+    /// <summary>
+    /// A convenience method for sending a queue position update to a specific client.
+    /// </summary>
+    /// <param name="server">The server instance.</param>
+    /// <param name="clientId">The connection ID of the client to send the position update to.</param>
+    /// <param name="position">The 1-indexed queue position to send to the client.</param>
+    public static void SendQueuePositionUpdate(this ServerMain server, int clientId, int position)
+    {
         server.SendPacket(clientId, new Packet_Server
         {
             Id = 82,
             QueuePacket = new Packet_QueuePacket
             {
-                Position = position + 1
+                Position = position
             }
         });
     }
-    
+
     /// <summary>
     /// Compares a FieldReference with a a FieldInfo.
     /// </summary>

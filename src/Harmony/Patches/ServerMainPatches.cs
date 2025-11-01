@@ -7,7 +7,6 @@ using Vintagestory.Server;
 
 namespace QueueAPI.Harmony.Patches;
 
-    
 [HarmonyPatch]
 public static class ServerMainPatches
 {
@@ -26,7 +25,7 @@ public static class ServerMainPatches
         InternalHooks.OnPlayerConnect(packet, client, entitlements);
         return false;
     }
-    
+
     /// <summary>
     /// Intercepts all calls to UpdateQueuedPlayersAfterDisconnect and redirects them to use the configured handler.
     /// The original method contents are skipped entirely and are not executed.
@@ -42,7 +41,7 @@ public static class ServerMainPatches
         InternalHooks.OnPlayerDisconnect(client);
         return false;
     }
-    
+
     /// <summary>
     /// Replaces the joined player count calculation with a call to the configured handler.
     /// </summary>
@@ -66,9 +65,9 @@ public static class ServerMainPatches
             IL_004f: callvirt     instance int32 class [System.Collections]System.Collections.Generic.List`1<class Vintagestory.Server.QueuedClient>::get_Count()
             IL_0054: sub
          */
-        
+
         var matcher = new CodeMatcher(instructions, generator);
-        
+
         matcher.MatchStartForward(
             new CodeMatch(OpCodes.Ldarg_0),
             new CodeMatch(OpCodes.Ldfld, typeof(ServerMain).Field(nameof(ServerMain.Clients))),
@@ -78,16 +77,16 @@ public static class ServerMainPatches
             new CodeMatch(OpCodes.Callvirt, typeof(List<QueuedClient>).Property(nameof(List<QueuedClient>.Count)).GetGetMethod())
         );
         matcher.ThrowIfNotMatch("Could not rewrite ConnectionQueue usage to use the QueueAPI hooks in ServerMain.Process");
-        
+
         matcher.Repeat(matchAction: match =>
         {
             matcher.RemoveInstructions(7);
-            matcher.Insert(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(InternalHooks), nameof(InternalHooks.GetJoinedPlayerCount))));
+            matcher.Insert(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(InternalHooks), nameof(InternalHooks.GetWorldPopulation))));
         });
-        
+
         return matcher.Instructions();
     }
-    
+
     /// <summary>
     /// Injects a call to InternalHooks.OnPlayerJoined when a player actually joins. Being in the queue does not count
     /// as having joined.
@@ -121,7 +120,7 @@ public static class ServerMainPatches
              IL_003c: call         instance class Packet_Server Vintagestory.Server.ServerMain::CreatePacketIdentification(bool)
              IL_0041: call         instance void Vintagestory.Server.ServerMain::SendPacket(class [VintagestoryAPI]Vintagestory.API.Server.IServerPlayer, class Packet_Server)
          */
-        
+
         var matcher = new CodeMatcher(instructions, generator);
 
         matcher.MatchStartForward(
