@@ -4,7 +4,7 @@
     "name": "Queue API",
     "description" : "Provides an API for other mods to interact with the player join queue.",
     "authors": ["Cecer"],
-    "version": "1.0.0",
+    "version": "2.0.0-rc.0",
     "dependencies": { 
         "game": "1.21.5"
     },

@@ -2,13 +2,6 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-[assembly: ModInfo("Queue API", "queueapi",
-    Authors = ["Cecer"],
-    Description = "Provides an API for other mods to interact with the player join queue.",
-    Version = "1.0.0",
-    RequiredOnServer = true,
-    RequiredOnClient = false)]
-
 namespace QueueAPI;
 
 public class QueueAPIModSystem : ModSystem
