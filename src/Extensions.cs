@@ -7,7 +7,6 @@ namespace QueueAPI;
 
 public static class Extensions
 {
-
     /// <summary>
     /// A convenience method for getting the internal <see cref="ServerMain" /> instance.
     /// </summary>

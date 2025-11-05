@@ -1,4 +1,3 @@
-using Vintagestory.API.Server;
 using Vintagestory.Server;
 
 namespace QueueAPI.SampleHandlers.PriorityQueue;
