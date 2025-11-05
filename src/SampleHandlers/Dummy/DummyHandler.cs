@@ -22,7 +22,7 @@ public class DummyHandler(ServerMain server) : IQueueAPIEventHandler
         throw new System.NotImplementedException();
     }
 
-    public void OnClientDisconnect(int clientId)
+    public void OnClientDisconnect(ConnectedClient client)
     {
         throw new System.NotImplementedException();
     }

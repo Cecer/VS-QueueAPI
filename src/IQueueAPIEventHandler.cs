@@ -76,9 +76,9 @@ public interface IQueueAPIEventHandler
     /// <summary>
     /// Called when a client disconnects. This is called on matter what state the client is currently in.
     /// </summary>
-    /// <param name="clientId">The ID of the client that disconnected</param>
+    /// <param name="client">The client that disconnected</param>
     /// <remarks>This method is at risk of being called from a non-main thread. Be careful.</remarks>
-    void OnClientDisconnect(int clientId);
+    void OnClientDisconnect(ConnectedClient client);
 
     /// <summary>
     /// Called when this handler is attached to the Queue API.

@@ -99,15 +99,24 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     public void OnClientAccepted(ConnectedClient client) { }
 
     /// <inheritdoc />
-    public void OnClientDisconnect(int clientId)
+    public void OnClientDisconnect(ConnectedClient client)
     {
-        Queue.Remove(clientId, out _);
-
-        QueuedClient? queuedClient;
-        while (!((IQueueAPIEventHandler)this).IsWorldFull && (queuedClient = Queue.RemoveNext()) != null)
+        var worldCapacity = (this as IQueueAPIEventHandler).WorldRemainingCapacity;
+        if (client.State != EnumClientState.Connecting && client.State != EnumClientState.Queued)
         {
+            worldCapacity++;
+        }
+        for (; worldCapacity > 0; worldCapacity--)
+        {
+            QueuedClient? queuedClient = Queue.RemoveNext();
+            if (queuedClient == null)
+            {
+                break;
+            }
             server.FinalizePlayerIdentification(queuedClient.Identification, queuedClient.Client, queuedClient.Entitlements);
         }
+
+        Queue.Remove(client.Id, out _);
         Queue.SendPendingPositionUpdates();
     }
     
