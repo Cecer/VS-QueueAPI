@@ -32,7 +32,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     /// </summary>
     /// <param name="client">The client trying to join the server</param>
     /// <returns>An <see cref="AcceptanceResult"/> indicating the appropriate action to take on the client.</returns>
-    private AcceptanceResult RequestAcceptance(ConnectedClient client)
+    protected virtual AcceptanceResult RequestAcceptance(ConnectedClient client)
     {
         // Because connecting clients count towards the total count, we subtract them.
         var capacityAdjustment = client.State == EnumClientState.Connecting ? 1 : 0;
