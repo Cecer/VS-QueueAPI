@@ -4,7 +4,8 @@ using Vintagestory.Server;
 namespace QueueAPI.SampleHandlers.PriorityQueue;
 
 // Please note: This sample is completely untested at this time.
-//              There is a non-zero chance this doesn't work quite right. 
+//              There is a non-zero chance this doesn't work quite right.
+//              (It also isn't even fully implemented yet)
 
 public class PriorityQueueJoinQueue(ServerMain server) : IJoinQueue
 {
