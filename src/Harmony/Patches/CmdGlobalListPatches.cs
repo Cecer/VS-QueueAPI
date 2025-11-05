@@ -9,7 +9,6 @@ using Vintagestory.Server;
 
 namespace QueueAPI.Harmony.Patches;
 
-    
 [HarmonyPatch]
 public static class CmdGlobalListPatches
 {
@@ -51,7 +50,7 @@ public static class CmdGlobalListPatches
             
             How can I filter my CodeMatch rule to match only Ldftn when the references method matches?
          */
-        
+
         var matcher = new CodeMatcher(instructions, generator);
 
         matcher.MatchStartForward(
@@ -89,7 +88,7 @@ public static class CmdGlobalListPatches
                 if (instrs[3].OpCode != Mono.Cecil.Cil.OpCodes.Ldarg_0) return false;
 
                 if (instrs[4].OpCode != Mono.Cecil.Cil.OpCodes.Ldfld) return false;
-                
+
                 if (!((FieldReference)instrs[4].Operand).Matches(lambdaType.Field("client"))) return false;
 
                 if (instrs[5].OpCode != Mono.Cecil.Cil.OpCodes.Ldfld) return false;
@@ -105,27 +104,27 @@ public static class CmdGlobalListPatches
             new CodeMatch(OpCodes.Callvirt, typeof(List<QueuedClient>).Method(nameof(List<QueuedClient>.FindIndex), [typeof(Predicate<QueuedClient>)]))
         );
         matcher.ThrowIfNotMatch("Could not rewrite ConnectionQueue usage to use the QueueAPI hooks in CmdGlobalList.listClients");
-        
+
         matcher.Repeat(matchAction: match =>
         {
             matcher.RemoveInstructions(3); // Skip the loading of ConnectionQueue onto the stack
-            
+
             matcher.Advance(1); // Preserve the loading of the lambda onto the stack
-            
+
             var lambdaType = ((MethodInfo)matcher.Operand).DeclaringType; // Get the lambda type from the ldftn instruction. We'll use it to access the client field.
-            
+
             matcher.RemoveInstructions(3); // Skip the remainder of the match
-            
+
             matcher.Insert(
                 new CodeInstruction(OpCodes.Ldfld, lambdaType.Field("client")),
                 new CodeInstruction(OpCodes.Ldfld, typeof(ConnectedClient).Field(nameof(ConnectedClient.Id))),
-                new CodeInstruction(OpCodes.Call, typeof(InternalHooks).Method(nameof(InternalHooks.GetClientQueueIndex)))
+                new CodeInstruction(OpCodes.Call, typeof(InternalHooks).Method(nameof(InternalHooks.GetClientPosition)))
             );
         });
-        
+
         return matcher.Instructions();
     }
-    
+
     /// <summary>
     /// Replaces the player queue position access with a call to the configured handler.
     /// </summary>
@@ -134,7 +133,7 @@ public static class CmdGlobalListPatches
     ///   <code>this.server.ConnectionQueue[index]</code>
     ///
     /// After:
-    ///   <code>PatchHooks.GetClientAtQueuePosition(index)</code>
+    ///   <code>PatchHooks.GetClientAtQueuePosition(index + 1)</code>
     /// </remarks>
     [HarmonyTranspiler]
     [HarmonyPatch("Vintagestory.Server.CmdGlobalList", "listClients")]
@@ -147,7 +146,7 @@ public static class CmdGlobalListPatches
             IL_00b3: ldloc.3      // index
             IL_00b4: callvirt     instance !0/*class Vintagestory.Server.QueuedClient* / class [System.Collections]System.Collections.Generic.List`1<class Vintagestory.Server.QueuedClient>::get_Item(int32)
          */
-        
+
         var matcher = new CodeMatcher(instructions, generator);
 
         matcher.MatchStartForward(
@@ -158,18 +157,21 @@ public static class CmdGlobalListPatches
             new CodeMatch(OpCodes.Callvirt, typeof(List<QueuedClient>).Indexer([ typeof(int) ]).GetMethod)
         );
         matcher.ThrowIfNotMatch("Could not rewrite ConnectionQueue usage to use the QueueAPI hooks in CmdGlobalList.listClients");
-        
+
         matcher.Repeat(matchAction: match =>
         {
             matcher.RemoveInstructions(3); // Skip the loading of ConnectionQueue onto the stack
-            
+
             matcher.Advance(1); // Preserve the loading of the index onto the stack
-            
+
             matcher.RemoveInstructions(1); // Skip indexer access
-            
-            matcher.Insert(new CodeInstruction(OpCodes.Call, typeof(InternalHooks).Method(nameof(InternalHooks.GetClientAtQueueIndex))));
+
+            matcher.Insert(
+                new CodeInstruction(OpCodes.Ldc_I4_1),
+                new CodeInstruction(OpCodes.Add),
+                new CodeInstruction(OpCodes.Call, typeof(InternalHooks).Method(nameof(InternalHooks.GetClientAtPosition))));
         });
-        
+
         return matcher.Instructions();
     }
 }

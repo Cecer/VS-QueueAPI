@@ -1,5 +1,5 @@
 using HarmonyLib;
-using QueueAPI.Handlers;
+using QueueAPI.Default;
 using Vintagestory.Server;
 
 namespace QueueAPI;
@@ -13,11 +13,11 @@ namespace QueueAPI;
 
 internal static class InternalHooks
 {
-    private static ServerMain _server = (ServerMain) typeof(ServerProgram).DeclaredField("server").GetValue(null)!;
-    
-    private static object _handlerLock = new();
-    private static IJoinQueueHandler _handler = new SimpleJoinQueueHandler(_server);
-    internal static IJoinQueueHandler Handler
+    private static readonly ServerMain _server = (ServerMain) typeof(ServerProgram).DeclaredField("server").GetValue(null)!;
+
+    private static readonly object _handlerLock = new();
+    private static IQueueAPIEventHandler _handler = new DefaultQueueAPIEventHandler(_server);
+    internal static IQueueAPIEventHandler Handler
     {
         get => _handler;
         set
@@ -26,18 +26,8 @@ internal static class InternalHooks
             {
                 var oldHandler = _handler;
                 _handler = value;
-                
-                if (oldHandler.QueueSize > 0)
-                {
-                    _server.Api.Logger.Warning($"The queue API handler was changed but the old queue was not empty. Resetting the old queue state! All players in the odl queue handler be kicked.");
-                    _handler.Reset();
-                }
-                
-                if (_handler.QueueSize > 0)
-                {
-                    _server.Api.Logger.Warning($"The queue API handler was changed but the new queue is not empty. Resetting the new queue! All players in the new queue handler will be kicked.");
-                    _handler.Reset();
-                }
+                _handler.OnAttached(oldHandler);
+                oldHandler?.OnDetached(_handler);
             }
         }
     }
@@ -46,35 +36,41 @@ internal static class InternalHooks
     /// Returns the number of players waiting in the queue.
     /// </summary>
     /// <remarks>This would make more sense as a readonly property, but a method call results in cleaner patching code.</remarks>
-    internal static int GetQueueSize() => Handler.QueueSize;
+    internal static int GetQueueSize() => Handler.Queue.QueuePopulation;
 
     /// <summary>
     /// Returns the number of joined players in the queue.
     /// </summary>
     /// <remarks>This would make more sense as a readonly property, but a method call results in cleaner patching code.</remarks>
-    internal static int GetJoinedPlayerCount() => Handler.JoinedPlayerCount;
+    internal static int GetWorldPopulation() => Handler.WorldPopulation;
 
     /// <summary>
-    /// Returns the client's position in the join queue.
+    /// The client's (1-indexed) position in the join queue.
     /// </summary>
-    internal static int GetClientQueueIndex(int clientId) => Handler.GetClientQueueIndex(clientId);
+    /// <param name="clientId">The ID of the client to get the position of.</param>
+    /// <returns>The 1-indexed (the head of the queue is at position 1, there is no position 0) position of the specified client. If no such client ID is queued, -1 is returned..</returns>
+    internal static int GetClientPosition(int clientId) => Handler.Queue.GetClientPosition(clientId);
 
     /// <summary>
-    /// Returns the client's position in the join queue.
+    /// Get the client at a specified position in the join queue.
     /// </summary>
-    internal static QueuedClient? GetClientAtQueueIndex(int index) => Handler.GetClientAtQueueIndex(index);
+    /// <param name="position">The position of the player. This is 1-indexed (the head of the queue is at position 1, there is no position 0). Out of bounds values are ignored and simply return null.</param>
+    /// <returns>The client at the specified position or null if there is no client at the specified position.</returns>
+    internal static ConnectedClient? GetClientAtPosition(int position) => Handler.Queue.GetClientAtPosition(position);
 
-    // Called by ServerMain.PreFinalizePlayerIdentification.
-    internal static void OnPlayerConnect(Packet_ClientIdentification clientIdentPacket, ConnectedClient client, string entitlements) => Handler.OnPlayerConnect(clientIdentPacket, client, entitlements).Handle(_server, clientIdentPacket, client, entitlements);
+    internal static void OnPlayerConnect(Packet_ClientIdentification clientIdentPacket, ConnectedClient client, string entitlements)
+    {
+        Handler.OnClientConnect(clientIdentPacket, client, entitlements);
+    }
 
-    internal static void OnPlayerDisconnect(ConnectedClient client) => Handler.OnPlayerDisconnect(client);
+    internal static void OnPlayerDisconnect(ConnectedClient client) => Handler.OnClientDisconnect(client.Id);
 
-    internal static void OnPlayerJoined(string playerUid)
+    internal static void OnPlayerAccepted(string playerUid)
     {
         var client = _server.GetClientByUID(playerUid);
         if (client != null)
         {
-            Handler.OnPlayerJoined(playerUid, client.Id);
+            Handler.OnClientAccepted(client);
         }
     }
 }
