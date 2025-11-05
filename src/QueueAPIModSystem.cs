@@ -24,6 +24,7 @@ public class QueueAPIModSystem : ModSystem
     public override void StartServerSide(ICoreServerAPI api)
     {
         _api = api;
+        InternalHooks.DetectMainServerThread(); // There may very well be a better way to do this already in the game.
 
         _harmony = new HarmonyLib.Harmony("queueapi");
         _harmony.PatchAll();

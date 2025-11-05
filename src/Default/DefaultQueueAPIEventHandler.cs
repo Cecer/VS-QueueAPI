@@ -1,4 +1,3 @@
-using System;
 using QueueAPI.Harmony.Accessors;
 using Vintagestory.API.Config;
 using Vintagestory.API.Server;
@@ -102,17 +101,14 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     /// <inheritdoc />
     public void OnClientDisconnect(int clientId)
     {
-        server.EnqueueMainThreadTask(() =>
-        {
-            Queue.Remove(clientId, out _);
+        Queue.Remove(clientId, out _);
 
-            QueuedClient? queuedClient;
-            while (!((IQueueAPIEventHandler)this).IsWorldFull && (queuedClient = Queue.RemoveNext()) != null)
-            {
-                server.FinalizePlayerIdentification(queuedClient.Identification, queuedClient.Client, queuedClient.Entitlements);
-            }
-            Queue.SendPendingPositionUpdates();
-        });
+        QueuedClient? queuedClient;
+        while (!((IQueueAPIEventHandler)this).IsWorldFull && (queuedClient = Queue.RemoveNext()) != null)
+        {
+            server.FinalizePlayerIdentification(queuedClient.Identification, queuedClient.Client, queuedClient.Entitlements);
+        }
+        Queue.SendPendingPositionUpdates();
     }
     
     /// <inheritdoc />
@@ -120,7 +116,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     {
         if (!Queue.IsQueueEmpty)
         {
-            server.Api.Logger.Warning($"The Queue API handler was changed but the new queue is not empty. Resetting the new queue! All players currently in the new queue will be kicked.");
+            server.Api.Logger.Warning("The Queue API handler was changed but the new queue is not empty. Resetting the new queue! All players currently in the new queue will be kicked.");
             Queue.RemoveAll("Queue reset");
         }
     }

@@ -1,3 +1,4 @@
+using System.Threading;
 using HarmonyLib;
 using QueueAPI.Default;
 using Vintagestory.Server;
@@ -14,6 +15,22 @@ namespace QueueAPI;
 internal static class InternalHooks
 {
     private static readonly ServerMain _server = (ServerMain) typeof(ServerProgram).DeclaredField("server").GetValue(null)!;
+
+    private static Thread _mainServerThread;
+    internal static bool IsMainServerThread => Thread.CurrentThread == _mainServerThread;
+    /// <summary>
+    /// Must be called at least once before <see cref="IsMainServerThread"/> is used."/>.
+    /// This should already be taken care of by <see cref="QueueAPIModSystem"/>.
+    /// </summary>
+    internal static void DetectMainServerThread()
+    {
+        _server.EnqueueMainThreadTask(() =>
+        {
+            _mainServerThread = Thread.CurrentThread;
+            _server.Api.Logger.Debug($"[QueueAPI] Detected main server thread: {_mainServerThread.ManagedThreadId}");
+        });
+    }
+
 
     private static readonly object _handlerLock = new();
     private static IQueueAPIEventHandler _handler = new DefaultQueueAPIEventHandler(_server);
@@ -63,7 +80,20 @@ internal static class InternalHooks
         Handler.OnClientConnect(clientIdentPacket, client, entitlements);
     }
 
-    internal static void OnPlayerDisconnect(ConnectedClient client) => Handler.OnClientDisconnect(client.Id);
+    internal static void OnPlayerDisconnect(ConnectedClient client)
+    {
+        if (IsMainServerThread)
+        {
+            Handler.OnClientDisconnect(client);
+        }
+        else
+        {
+            _server.EnqueueMainThreadTask(() =>
+            {
+                Handler.OnClientDisconnect(client);
+            });
+        }
+    }
 
     internal static void OnPlayerAccepted(string playerUid)
     {
