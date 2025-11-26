@@ -10,13 +10,17 @@ project_dir="$(dirname "$(realpath "$0")")";
 project_name="$(jq -r .project.restore.projectName obj/project.assets.json)";
 version="$(jq -r .version assets/modinfo.json)";
 
+# Update project file
+csproj_file="$project_dir/$project_name.csproj";
+for tag in Version AssemblyVersion FileVersion; do
+    if grep -q "<$tag>" "$csproj_file"; then
+        sed -i "s|<$tag>.*</$tag>|<$tag>$version</$tag>|" "$csproj_file";
+    fi
+done
+
 printf "[Project Info]\n  Path: %s\n  Name: %s\n  Version: %s\n" "$project_dir" "$project_name" "$version";
 
-# TODO: Update project version based on modinfo.json
-
 assembled_dir="$project_dir/builds/$project_name/";
-mkdir -p "$assembled_dir";
-
 mkdir -p "$assembled_dir";
 rm -Rfv "${assembled_dir:?}/"*;
 
