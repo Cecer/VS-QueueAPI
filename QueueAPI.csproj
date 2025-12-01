@@ -8,6 +8,14 @@
         <Version>1.0.0</Version>
         <AssemblyVersion>1.0.0</AssemblyVersion>
         <FileVersion>1.0.0</FileVersion>
+        <RootNamespace>QueueAPI</RootNamespace>
+
+        <Title>Queue API</Title>
+        <Description>Provides an API for other mods to interact with the player join queue.</Description>
+        <PackageId>Cecer.VinageStory.QueueAPI</PackageId>
+        <RepositoryUrl>https://github.com/Cecer/VS-QueueAPI/</RepositoryUrl>
+        <PackageProjectUrl>https://mods.vintagestory.at/queueapi</PackageProjectUrl>
+        <EmbedAllSources>true</EmbedAllSources>
     </PropertyGroup>
 
     <ItemGroup>
