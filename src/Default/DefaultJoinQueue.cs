@@ -5,14 +5,14 @@ namespace QueueAPI.Default;
 
 public class DefaultJoinQueue(ServerMain server) : IJoinQueue
 {
-    private readonly Dictionary<int, int> _pendingPositionUpdates = new();
+    protected readonly Dictionary<int, int> _pendingPositionUpdates = new();
 
-    public bool IsQueueEnabled  => server.Config.MaxClientsInQueue > 0;
-    public int QueuePopulation => server.ConnectionQueue.Count;
-    public int QueueTotalCapacity => server.Config.MaxClientsInQueue;
+    public virtual bool IsQueueEnabled  => server.Config.MaxClientsInQueue > 0;
+    public virtual int QueuePopulation => server.ConnectionQueue.Count;
+    public virtual int QueueTotalCapacity => server.Config.MaxClientsInQueue;
 
     /// <inheritdoc />
-    public QueuedClient? Add(QueuedClient client)
+    public virtual QueuedClient? Add(QueuedClient client)
     {
         var currentQueueSize = server.ConnectionQueue.Count;
         for (var i = 0; i < currentQueueSize; i++)
@@ -32,7 +32,7 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public bool Remove(int clientId, out QueuedClient? removed)
+    public virtual bool Remove(int clientId, out QueuedClient? removed)
     {
         removed = null;
         var index = 0;
@@ -55,7 +55,7 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public bool Remove(string playerUid, out QueuedClient? removed)
+    public virtual bool Remove(string playerUid, out QueuedClient? removed)
     {
         removed = null;
         var index = 0;
@@ -82,7 +82,7 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public QueuedClient? RemoveNext()
+    public virtual QueuedClient? RemoveNext()
     {
         if (server.ConnectionQueue.Count == 0)
         {
@@ -97,13 +97,13 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public void SchedulePositionUpdate(QueuedClient client, int position)
+    public virtual void SchedulePositionUpdate(QueuedClient client, int position)
     {
         _pendingPositionUpdates[client.Client.Id] = position;
     }
 
     /// <inheritdoc />
-    public void SendPendingPositionUpdates()
+    public virtual void SendPendingPositionUpdates()
     {
         if (_pendingPositionUpdates.Count == 0) return;
         foreach (var (clientId, position) in _pendingPositionUpdates)
@@ -114,7 +114,7 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public void RemoveAll(string? message)
+    public virtual void RemoveAll(string? message)
     {
         foreach (var client in server.ConnectionQueue)
         {
@@ -126,7 +126,7 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public int GetClientPosition(int clientId)
+    public virtual int GetClientPosition(int clientId)
     {
         for (int index = 0; index < server.ConnectionQueue.Count; index++)
         {
@@ -140,7 +140,7 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public ConnectedClient? GetClientAtPosition(int position)
+    public virtual ConnectedClient? GetClientAtPosition(int position)
     {
         if (server.ConnectionQueue.Count >= position)
         {

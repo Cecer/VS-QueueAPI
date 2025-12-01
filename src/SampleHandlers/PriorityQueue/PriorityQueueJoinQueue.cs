@@ -1,28 +1,28 @@
 using System.Collections.Generic;
+using QueueAPI.Default;
 using Vintagestory.Server;
 
 namespace QueueAPI.SampleHandlers.PriorityQueue;
 
 // Please note: This sample is completely untested at this time.
 //              There is a non-zero chance this doesn't work quite right.
-//              (It also isn't even fully implemented yet)
+//              (It also probably isn't even fully implemented yet)
 
-public class PriorityQueueJoinQueue(ServerMain server) : IJoinQueue
+/// <summary>
+/// A slight variation on the default join queue that prioritises certain players over others based on the return value of <see cref="HasPriority(string)"/>.
+/// By default, only Cecer is given priority.
+/// </summary>
+/// <inheritdoc/>
+public class PriorityQueueJoinQueue(ServerMain server) : DefaultJoinQueue(server)
 {
     private readonly List<QueuedClient> _priorityConnectionQueue = [];
     private readonly List<QueuedClient> _standardConnectionQueue = [];
 
-    private readonly Dictionary<int, int> _pendingPositionUpdates = new();
-
     /// <inheritdoc/>
-    public bool IsQueueEnabled => server.Config.MaxClientsInQueue > 0;
-    /// <inheritdoc/>
-    public int QueuePopulation => _standardConnectionQueue.Count + _priorityConnectionQueue.Count;
-    /// <inheritdoc/>
-    public int QueueTotalCapacity => server.Config.MaxClientsInQueue;
+    public override int QueuePopulation => _standardConnectionQueue.Count + _priorityConnectionQueue.Count;
 
     /// <inheritdoc />
-    public QueuedClient? Add(QueuedClient client)
+    public override QueuedClient? Add(QueuedClient client)
     {
         var hasPriority = HasPriority(client.Client.SentPlayerUid);
 
@@ -72,7 +72,7 @@ public class PriorityQueueJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public bool Remove(int clientId, out QueuedClient? removed)
+    public override bool Remove(int clientId, out QueuedClient? removed)
     {
         removed = null;
         var priorityIndex = 0;
@@ -111,7 +111,7 @@ public class PriorityQueueJoinQueue(ServerMain server) : IJoinQueue
         return removed != null;
     }
 
-    public bool Remove(string playerUid, out QueuedClient? removed)
+    public override bool Remove(string playerUid, out QueuedClient? removed)
     {
         removed = null;
         var priorityIndex = 0;
@@ -151,7 +151,7 @@ public class PriorityQueueJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public QueuedClient? RemoveNext()
+    public override QueuedClient? RemoveNext()
     {
         if (_priorityConnectionQueue.Count > 0)
         {
@@ -181,26 +181,8 @@ public class PriorityQueueJoinQueue(ServerMain server) : IJoinQueue
 
         return null;
     }
-
     /// <inheritdoc />
-    public void SchedulePositionUpdate(QueuedClient client, int position)
-    {
-        _pendingPositionUpdates[client.Client.Id] = position;
-    }
-
-    /// <inheritdoc />
-    public void SendPendingPositionUpdates()
-    {
-        if (_pendingPositionUpdates.Count == 0) return;
-        foreach (var (clientId, position) in _pendingPositionUpdates)
-        {
-            server.SendQueuePositionUpdate(clientId, position);
-        }
-        _pendingPositionUpdates.Clear();
-    }
-
-    /// <inheritdoc />
-    public void RemoveAll(string message)
+    public override void RemoveAll(string message)
     {
         foreach (var client in _priorityConnectionQueue)
         {
@@ -216,7 +198,7 @@ public class PriorityQueueJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public int GetClientPosition(int clientId)
+    public override int GetClientPosition(int clientId)
     {
         for (int index = 0; index < _priorityConnectionQueue.Count; index++)
         {
@@ -238,7 +220,7 @@ public class PriorityQueueJoinQueue(ServerMain server) : IJoinQueue
     }
 
     /// <inheritdoc />
-    public ConnectedClient? GetClientAtPosition(int position)
+    public override ConnectedClient? GetClientAtPosition(int position)
     {
         if (_priorityConnectionQueue.Count >= position)
         {
@@ -251,8 +233,12 @@ public class PriorityQueueJoinQueue(ServerMain server) : IJoinQueue
         return _standardConnectionQueue[position].Client;
     }
 
-    public bool HasPriority(string playerUid)
+    public virtual bool HasPriority(string playerUid)
     {
-        return false;
+        switch (playerUid)
+        {
+            case "zAHbSBErC90g6dqn0pTWNRUB": return true; // Give Cecer priority
+            default: return false;
+        }
     }
 }

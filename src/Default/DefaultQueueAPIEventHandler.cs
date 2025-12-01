@@ -10,22 +10,22 @@ namespace QueueAPI.Default;
 /// <param name="server"></param>
 public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHandler
 {
-    public IJoinQueue Queue { get; } = new DefaultJoinQueue(server);
+    public virtual IJoinQueue Queue { get; } = new DefaultJoinQueue(server);
 
     /// <summary>
     /// The number of clients currently in the world.
     /// This number may be higher <see cref="WorldTotalCapacity"/> if the world is over capacity.
     /// </summary>
-    public int WorldPopulation => server.Clients.Count - Queue.QueuePopulation;
+    public virtual int WorldPopulation => server.Clients.Count - Queue.QueuePopulation;
 
     /// <summary>
     /// The maximum number of clients allowed in the world concurrently.
     /// This number may be lower than <see cref="WorldPopulation"/> if the world is over capacity.
     /// </summary>
-    public int WorldTotalCapacity => server.Config.MaxClients;
+    public virtual int WorldTotalCapacity => server.Config.MaxClients;
 
-    private string? ServerFullKickMessage => Lang.Get("Server is full ({0} max clients)", server.Config.MaxClients);
-    private string? ConcurrentLoginKickMessage => null; // No kick message given (this matches the vanilla behaviour)
+    protected virtual string? ServerFullKickMessage => Lang.Get("Server is full ({0} max clients)", server.Config.MaxClients);
+    protected virtual string? ConcurrentLoginKickMessage => null; // No kick message given (this matches the vanilla behaviour)
 
     /// <summary>
     /// Checks the state of the server and queue to determine whether the client should be accepted, placed in the queue or rejected.
@@ -63,7 +63,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     }
 
     /// <inheritdoc />
-    public void OnClientConnect(Packet_ClientIdentification clientIdentPacket, ConnectedClient client, string entitlements)
+    public virtual void OnClientConnect(Packet_ClientIdentification clientIdentPacket, ConnectedClient client, string entitlements)
     {
         var acceptResult = RequestAcceptance(client);
         switch (acceptResult)
@@ -96,7 +96,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
 
 
     /// <inheritdoc />
-    public void OnClientAccepted(ConnectedClient client) { }
+    public virtual void OnClientAccepted(ConnectedClient client) { }
 
     /// <inheritdoc />
     public void OnClientDisconnect(ConnectedClient client)
@@ -121,7 +121,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     }
     
     /// <inheritdoc />
-    public void OnAttached(IQueueAPIEventHandler? previousHandler)
+    public virtual void OnAttached(IQueueAPIEventHandler? previousHandler)
     {
         if (!Queue.IsQueueEmpty)
         {
@@ -131,7 +131,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     }
 
     /// <inheritdoc />
-    public void OnDetached(IQueueAPIEventHandler? newHandler)
+    public virtual void OnDetached(IQueueAPIEventHandler? newHandler)
     {
         if (!Queue.IsQueueEmpty)
         {

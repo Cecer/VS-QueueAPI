@@ -10,7 +10,7 @@ public class DummyHandler(ServerMain server) : IQueueAPIEventHandler
     public int WorldPopulation => 0;
     public int WorldTotalCapacity => 0;
 
-    public IJoinQueue Queue { get; } = new DummyQueue(server);
+    public IJoinQueue Queue { get; } = new DummyQueue();
 
     public void OnClientConnect(Packet_ClientIdentification clientIdentPacket, ConnectedClient client, string entitlements)
     {

@@ -3,7 +3,7 @@ using Vintagestory.Server;
 
 namespace QueueAPI.SampleHandlers.Dummy;
 
-public class DummyQueue(ServerMain server) : IJoinQueue
+public class DummyQueue : IJoinQueue
 {
     public bool IsQueueEnabled => false;
     public int QueuePopulation => 0;
