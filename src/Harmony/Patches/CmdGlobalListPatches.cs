@@ -72,7 +72,7 @@ public static class CmdGlobalListPatches
                 if (methodParams[0].ParameterType != typeof(QueuedClient)) return false;
 
                 var module = ModuleDefinition.ReadModule(method.Module.FullyQualifiedName);
-                var def = module.GetType(method.DeclaringType?.FullName.Replace("+", "/"))?.Methods.FirstOrDefault(m => m.Name == method.Name);
+                var def = module.GetType(method.DeclaringType?.FullName?.Replace("+", "/"))?.Methods.FirstOrDefault(m => m.Name == method.Name);
 
                 if (def?.Body == null) return false;
 

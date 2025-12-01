@@ -15,6 +15,8 @@ namespace QueueAPI.SampleHandlers.PriorityQueue;
 /// <inheritdoc/>
 public class PriorityQueueJoinQueue(ServerMain server) : DefaultJoinQueue(server)
 {
+    private readonly ServerMain _server = server;
+
     private readonly List<QueuedClient> _priorityConnectionQueue = [];
     private readonly List<QueuedClient> _standardConnectionQueue = [];
 
@@ -182,17 +184,17 @@ public class PriorityQueueJoinQueue(ServerMain server) : DefaultJoinQueue(server
         return null;
     }
     /// <inheritdoc />
-    public override void RemoveAll(string message)
+    public override void RemoveAll(string? message)
     {
         foreach (var client in _priorityConnectionQueue)
         {
-            server.DisconnectPlayer(client.Client, null, message);
+            _server.DisconnectPlayer(client.Client, null, message);
         }
         _priorityConnectionQueue.Clear();
 
         foreach (var client in _standardConnectionQueue)
         {
-            server.DisconnectPlayer(client.Client, null, message);
+            _server.DisconnectPlayer(client.Client, null, message);
         }
         _standardConnectionQueue.Clear();
     }

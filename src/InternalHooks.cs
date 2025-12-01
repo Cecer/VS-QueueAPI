@@ -16,8 +16,9 @@ internal static class InternalHooks
 {
     private static readonly ServerMain _server = (ServerMain) typeof(ServerProgram).DeclaredField("server").GetValue(null)!;
 
-    private static Thread _mainServerThread;
-    internal static bool IsMainServerThread => Thread.CurrentThread == _mainServerThread;
+    private static Thread? _mainServerThread;
+    private static bool IsMainServerThread => Thread.CurrentThread == _mainServerThread;
+
     /// <summary>
     /// Must be called at least once before <see cref="IsMainServerThread"/> is used."/>.
     /// This should already be taken care of by <see cref="QueueAPIModSystem"/>.
@@ -32,14 +33,14 @@ internal static class InternalHooks
     }
 
 
-    private static readonly object _handlerLock = new();
+    private static readonly object HandlerLock = new();
     private static IQueueAPIEventHandler _handler = new DefaultQueueAPIEventHandler(_server);
     internal static IQueueAPIEventHandler Handler
     {
         get => _handler;
         set
         {
-            lock (_handlerLock)
+            lock (HandlerLock)
             {
                 var oldHandler = _handler;
                 _handler = value;

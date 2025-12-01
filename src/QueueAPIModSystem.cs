@@ -6,7 +6,7 @@ namespace QueueAPI;
 public class QueueAPIModSystem : ModSystem
 {
     private HarmonyLib.Harmony? _harmony;
-    private ICoreServerAPI _api;
+    private ICoreServerAPI _api = null!; // Will be initialised in StartServerSide.
 
     /// <summary>
     /// The current queue handler. 

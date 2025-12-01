@@ -99,7 +99,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     public virtual void OnClientAccepted(ConnectedClient client) { }
 
     /// <inheritdoc />
-    public void OnClientDisconnect(ConnectedClient client)
+    public virtual void OnClientDisconnect(ConnectedClient client)
     {
         var worldCapacity = (this as IQueueAPIEventHandler).WorldRemainingCapacity;
         if (client.State != EnumClientState.Connecting && client.State != EnumClientState.Queued)
