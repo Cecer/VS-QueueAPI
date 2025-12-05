@@ -27,7 +27,7 @@ public class DummyHandler(ServerMain server) : IQueueAPIEventHandler
         throw new System.NotImplementedException();
     }
 
-    public void OnAttached(IQueueAPIEventHandler? previousHandler)
+    public void OnClientDisconnect(ConnectedClient client, string? othersReason, string? theirReason)
     {
         throw new System.NotImplementedException();
     }

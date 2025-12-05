@@ -81,17 +81,17 @@ internal static class InternalHooks
         Handler.OnClientConnect(clientIdentPacket, client, entitlements);
     }
 
-    internal static void OnPlayerDisconnect(ConnectedClient client)
+    internal static void OnPlayerDisconnect(ConnectedClient client, string? othersReason, string? theirReason)
     {
         if (IsMainServerThread)
         {
-            Handler.OnClientDisconnect(client);
+            Handler.OnClientDisconnect(client, othersReason, theirReason);
         }
         else
         {
             _server.EnqueueMainThreadTask(() =>
             {
-                Handler.OnClientDisconnect(client);
+                Handler.OnClientDisconnect(client, othersReason, theirReason);
             });
         }
     }

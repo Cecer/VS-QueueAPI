@@ -27,19 +27,67 @@ public static class ServerMainPatches
     }
 
     /// <summary>
-    /// Intercepts all calls to UpdateQueuedPlayersAfterDisconnect and redirects them to use the configured handler.
-    /// The original method contents are skipped entirely and are not executed.
+    /// We already replace all known calls to this method with calls to our internal hook.
+    /// In the event that any calls slip by, we intercept them here and set both kick messages to "ERR_FALLBACK_HOOK".
     /// </summary>
-    /// <remarks>
-    /// While I am not happy about completely replacing this method due to mod compatibility issues, I can't think of
-    /// any way to even begin to approach compatibility with another mod that touches this.
-    /// </remarks>
     [HarmonyPrefix]
     [HarmonyPatch(typeof(ServerMain), "UpdateQueuedPlayersAfterDisconnect")]
     private static bool UpdateQueuedPlayersAfterDisconnect_ReplaceCompletely(ConnectedClient client)
     {
-        InternalHooks.OnPlayerDisconnect(client);
+        InternalHooks.OnPlayerDisconnect(client, "ERR_FALLBACK_HOOK", "ERR_FALLBACK_HOOK");
         return false;
+    }
+
+    /// <summary>
+    /// Replaces calls to UpdateQueuedPlayersAfterDisconnect in DisconnectPlayer with calls to our internal hook.
+    /// </summary>
+    /// <remarks>
+    /// Before:
+    ///   <code>this.UpdateQueuedPlayersAfterDisconnect(client);</code>
+    ///
+    /// After:
+    ///   <code>this.UpdateQueuedPlayersAfterDisconnect(client, othersKickmessage, hisKickMessage);</code>
+    /// </remarks>
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(ServerMain), nameof(ServerMain.DisconnectPlayer))]
+    private static IEnumerable<CodeInstruction> Process_ReplaceUpdateQueuedPlayerAfterDisconnectCalls(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+    {
+        /*
+            IL_0257: ldarg.0      // this
+            IL_0258: ldarg.1      // client
+            IL_0259: call         instance void Vintagestory.Server.ServerMain::UpdateQueuedPlayersAfterDisconnect(class Vintagestory.Server.ConnectedClient)
+         */
+
+        var matcher = new CodeMatcher(instructions, generator);
+        var originalOthersKickmessageLocal = generator.DeclareLocal(typeof(string)); // Store the original othersKickmessage before it can get modified
+
+        matcher.Start();
+        matcher.Insert(
+            new CodeInstruction(OpCodes.Ldarg_2),
+            new CodeInstruction(OpCodes.Stloc, originalOthersKickmessageLocal.LocalIndex)
+        );
+
+
+        matcher.MatchStartForward(
+            new CodeMatch(OpCodes.Ldarg_0),
+            new CodeMatch(OpCodes.Ldarg_1),
+            new CodeMatch(OpCodes.Call, typeof(ServerMain).Method("UpdateQueuedPlayersAfterDisconnect"))
+        );
+        matcher.ThrowIfNotMatch("Could not rewrite UpdateQueuedPlayersAfterDisconnect calls to call the QueueAPI hooks in ServerMain.DisconnectPlayer");
+
+        matcher.Repeat(_ =>
+        {
+            matcher.RemoveInstructions(3);
+            matcher.Insert(
+                new CodeInstruction(OpCodes.Ldarg_1),
+                new CodeInstruction(OpCodes.Ldloc, originalOthersKickmessageLocal.LocalIndex),
+                new CodeInstruction(OpCodes.Ldarg_3),
+                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(InternalHooks), nameof(InternalHooks.OnPlayerDisconnect)))
+            );
+        });
+
+        return matcher.Instructions();
     }
 
     /// <summary>
