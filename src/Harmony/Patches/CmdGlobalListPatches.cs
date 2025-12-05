@@ -4,12 +4,14 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
+using JetBrains.Annotations;
 using Mono.Cecil;
 using Vintagestory.Server;
 
 namespace QueueAPI.Harmony.Patches;
 
 [HarmonyPatch]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public static class CmdGlobalListPatches
 {
     /// <summary>
@@ -105,7 +107,7 @@ public static class CmdGlobalListPatches
         );
         matcher.ThrowIfNotMatch("Could not rewrite ConnectionQueue usage to use the QueueAPI hooks in CmdGlobalList.listClients");
 
-        matcher.Repeat(matchAction: match =>
+        matcher.Repeat(_ =>
         {
             matcher.RemoveInstructions(3); // Skip the loading of ConnectionQueue onto the stack
 
@@ -158,7 +160,7 @@ public static class CmdGlobalListPatches
         );
         matcher.ThrowIfNotMatch("Could not rewrite ConnectionQueue usage to use the QueueAPI hooks in CmdGlobalList.listClients");
 
-        matcher.Repeat(matchAction: match =>
+        matcher.Repeat(_ =>
         {
             matcher.RemoveInstructions(3); // Skip the loading of ConnectionQueue onto the stack
 

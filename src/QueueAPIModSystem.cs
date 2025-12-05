@@ -12,7 +12,7 @@ public class QueueAPIModSystem : ModSystem
     /// The current queue handler. 
     /// Setting this to a new handler will reset the queue and cause all queuing players to be kicked. As such, this should probably only be done during server initialisation.
     /// </summary>
-    public IQueueAPIEventHandler Handler
+    public IQueueAPIHandler Handler
     {
         get => InternalHooks.Handler;
         set => InternalHooks.Handler = value;

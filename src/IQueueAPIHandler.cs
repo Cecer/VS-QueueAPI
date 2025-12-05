@@ -6,7 +6,7 @@ namespace QueueAPI;
 /// Handles the "low level" events from the opcode patches.
 /// Implementations of this interface are responsible for handling critical states in a protocol-compliant manner.
 /// </summary>
-public interface IQueueAPIEventHandler
+public interface IQueueAPIHandler
 {
     /// <summary>
     /// The number of clients currently in the world.
@@ -86,11 +86,11 @@ public interface IQueueAPIEventHandler
     /// Called when this handler is attached to the Queue API.
     /// </summary>
     /// <param name="previousHandler">The previous handler</param>
-    void OnAttached(IQueueAPIEventHandler? previousHandler);
+    void OnAttached(IQueueAPIHandler? previousHandler);
 
     /// <summary>
     /// Called when this handler is detached from the Queue API.
     /// </summary>
     /// <param name="newHandler">The new handler</param>
-    void OnDetached(IQueueAPIEventHandler? newHandler);
+    void OnDetached(IQueueAPIHandler? newHandler);
 }

@@ -8,7 +8,7 @@ namespace QueueAPI.Default;
 
 /// <inheritdoc />
 /// <param name="server"></param>
-public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHandler
+public class DefaultQueueAPIHandler(ServerMain server) : IQueueAPIHandler
 {
     public virtual IJoinQueue Queue { get; } = new DefaultJoinQueue(server);
 
@@ -36,7 +36,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     {
         // Because connecting clients count towards the total count, we subtract them.
         var capacityAdjustment = client.State == EnumClientState.Connecting ? 1 : 0;
-        if ((this as IQueueAPIEventHandler).WorldRemainingCapacity + capacityAdjustment > 0)
+        if ((this as IQueueAPIHandler).WorldRemainingCapacity + capacityAdjustment > 0)
         {
             // The world has capacity
             return AcceptanceResult.Accept;
@@ -101,7 +101,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     /// <inheritdoc />
     public virtual void OnClientDisconnect(ConnectedClient client, string? othersReason, string? theirReason)
     {
-        var worldCapacity = (this as IQueueAPIEventHandler).WorldRemainingCapacity;
+        var worldCapacity = (this as IQueueAPIHandler).WorldRemainingCapacity;
         if (client.State != EnumClientState.Connecting && client.State != EnumClientState.Queued)
         {
             worldCapacity++;
@@ -121,7 +121,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     }
     
     /// <inheritdoc />
-    public virtual void OnAttached(IQueueAPIEventHandler? previousHandler)
+    public virtual void OnAttached(IQueueAPIHandler? previousHandler)
     {
         if (!Queue.IsQueueEmpty)
         {
@@ -131,7 +131,7 @@ public class DefaultQueueAPIEventHandler(ServerMain server) : IQueueAPIEventHand
     }
 
     /// <inheritdoc />
-    public virtual void OnDetached(IQueueAPIEventHandler? newHandler)
+    public virtual void OnDetached(IQueueAPIHandler? newHandler)
     {
         if (!Queue.IsQueueEmpty)
         {

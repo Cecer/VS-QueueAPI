@@ -113,6 +113,7 @@ public class PriorityQueueJoinQueue(ServerMain server) : DefaultJoinQueue(server
         return removed != null;
     }
 
+    /// <inheritdoc />
     public override bool Remove(string playerUid, out QueuedClient? removed)
     {
         removed = null;
@@ -183,6 +184,7 @@ public class PriorityQueueJoinQueue(ServerMain server) : DefaultJoinQueue(server
 
         return null;
     }
+
     /// <inheritdoc />
     public override void RemoveAll(string? message)
     {
@@ -235,7 +237,7 @@ public class PriorityQueueJoinQueue(ServerMain server) : DefaultJoinQueue(server
         return _standardConnectionQueue[position].Client;
     }
 
-    public virtual bool HasPriority(string playerUid)
+    protected virtual bool HasPriority(string playerUid)
     {
         switch (playerUid)
         {

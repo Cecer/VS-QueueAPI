@@ -7,7 +7,7 @@ namespace QueueAPI.SampleHandlers.PriorityQueue;
 /// A slight variation on the default join queue that prioritises certain players over others.
 /// </summary>
 /// <inheritdoc/>
-public class PriorityQueueHandler(ServerMain server) : DefaultQueueAPIEventHandler(server)
+public class PriorityQueueHandler(ServerMain server) : DefaultQueueAPIHandler(server)
 {
     public override IJoinQueue Queue { get; } = new DefaultJoinQueue(server);
 }

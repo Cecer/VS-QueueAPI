@@ -1,10 +1,13 @@
 using System.Reflection;
+using JetBrains.Annotations;
 using Mono.Cecil;
 using Vintagestory.API.Server;
 using Vintagestory.Server;
 
 namespace QueueAPI;
 
+
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public static class Extensions
 {
     /// <summary>

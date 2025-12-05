@@ -14,7 +14,7 @@ namespace QueueAPI;
 
 internal static class InternalHooks
 {
-    private static readonly ServerMain _server = (ServerMain) typeof(ServerProgram).DeclaredField("server").GetValue(null)!;
+    private static readonly ServerMain Server = (ServerMain) typeof(ServerProgram).DeclaredField("server").GetValue(null)!;
 
     private static Thread? _mainServerThread;
     private static bool IsMainServerThread => Thread.CurrentThread == _mainServerThread;
@@ -25,17 +25,17 @@ internal static class InternalHooks
     /// </summary>
     internal static void DetectMainServerThread()
     {
-        _server.EnqueueMainThreadTask(() =>
+        Server.EnqueueMainThreadTask(() =>
         {
             _mainServerThread = Thread.CurrentThread;
-            _server.Api.Logger.Debug($"[QueueAPI] Detected main server thread: {_mainServerThread.ManagedThreadId}");
+            Server.Api.Logger.Debug($"[QueueAPI] Detected main server thread: {_mainServerThread.ManagedThreadId}");
         });
     }
 
 
     private static readonly object HandlerLock = new();
-    private static IQueueAPIEventHandler _handler = new DefaultQueueAPIEventHandler(_server);
-    internal static IQueueAPIEventHandler Handler
+    private static IQueueAPIHandler _handler = new DefaultQueueAPIHandler(Server);
+    internal static IQueueAPIHandler Handler
     {
         get => _handler;
         set
@@ -45,7 +45,7 @@ internal static class InternalHooks
                 var oldHandler = _handler;
                 _handler = value;
                 _handler.OnAttached(oldHandler);
-                oldHandler?.OnDetached(_handler);
+                oldHandler.OnDetached(_handler);
             }
         }
     }
@@ -89,7 +89,7 @@ internal static class InternalHooks
         }
         else
         {
-            _server.EnqueueMainThreadTask(() =>
+            Server.EnqueueMainThreadTask(() =>
             {
                 Handler.OnClientDisconnect(client, othersReason, theirReason);
             });
@@ -98,7 +98,7 @@ internal static class InternalHooks
 
     internal static void OnPlayerAccepted(string playerUid)
     {
-        var client = _server.GetClientByUID(playerUid);
+        var client = Server.GetClientByUID(playerUid);
         if (client != null)
         {
             Handler.OnClientAccepted(client);

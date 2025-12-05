@@ -3,9 +3,9 @@ using Vintagestory.Server;
 namespace QueueAPI.SampleHandlers.Dummy;
 
 /// <summary>
-/// A simple <see cref="AbstractHandler{TClient,TQueue}"/> implementation that simply kicks all joining players immediately.
+/// A simple <see cref="IQueueAPIHandler"/> implementation that simply kicks all joining players immediately.
 /// </summary>
-public class DummyHandler(ServerMain server) : IQueueAPIEventHandler
+public class DummyHandler(ServerMain server) : IQueueAPIHandler
 {
     public int WorldPopulation => 0;
     public int WorldTotalCapacity => 0;
@@ -19,21 +19,25 @@ public class DummyHandler(ServerMain server) : IQueueAPIEventHandler
 
     public void OnClientAccepted(ConnectedClient client)
     {
-        throw new System.NotImplementedException();
-    }
 
-    public void OnClientDisconnect(ConnectedClient client)
-    {
-        throw new System.NotImplementedException();
     }
 
     public void OnClientDisconnect(ConnectedClient client, string? othersReason, string? theirReason)
     {
-        throw new System.NotImplementedException();
+
     }
 
-    public void OnDetached(IQueueAPIEventHandler? newHandler)
+    public void OnAttached(IQueueAPIHandler? previousHandler)
     {
-        throw new System.NotImplementedException();
+        // Kick all existing players when attached
+        foreach (var client in server.Clients.Values)
+        {
+            server.DisconnectPlayer(client, null, "Dummy handler");
+        }
+    }
+
+    public void OnDetached(IQueueAPIHandler? newHandler)
+    {
+
     }
 }

@@ -5,7 +5,7 @@ namespace QueueAPI.Default;
 
 public class DefaultJoinQueue(ServerMain server) : IJoinQueue
 {
-    protected readonly Dictionary<int, int> _pendingPositionUpdates = new();
+    private readonly Dictionary<int, int> _pendingPositionUpdates = new();
 
     public virtual bool IsQueueEnabled  => server.Config.MaxClientsInQueue > 0;
     public virtual int QueuePopulation => server.ConnectionQueue.Count;

@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using JetBrains.Annotations;
 using Vintagestory.Server;
 
 namespace QueueAPI.Harmony.Patches;
 
 [HarmonyPatch]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public static class CmdStatsPatches
 {
     /// <summary>
@@ -37,7 +39,7 @@ public static class CmdStatsPatches
         );
         matcher.ThrowIfNotMatch("Could not rewrite ConnectionQueue usage to use the QueueAPI hooks in CmdStats.genStats");
 
-        matcher.Repeat(matchAction: match =>
+        matcher.Repeat(_ =>
         {
             matcher.RemoveInstructions(3);
             matcher.Insert(new CodeInstruction(OpCodes.Call, typeof(InternalHooks).Method(nameof(InternalHooks.GetQueueSize))));

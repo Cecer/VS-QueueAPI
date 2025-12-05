@@ -12,7 +12,7 @@
 
         <Title>Queue API</Title>
         <Description>Provides an API for other mods to interact with the player join queue.</Description>
-        <PackageId>Cecer.VinageStory.QueueAPI</PackageId>
+        <PackageId>Cecer.VintageStory.QueueAPI</PackageId>
         <RepositoryUrl>https://github.com/Cecer/VS-QueueAPI/</RepositoryUrl>
         <PackageProjectUrl>https://mods.vintagestory.at/queueapi</PackageProjectUrl>
         <EmbedAllSources>true</EmbedAllSources>
@@ -36,6 +36,10 @@
             <HintPath>$(VINTAGE_STORY)\Lib\Mono.Cecil.dll</HintPath>
             <Private>False</Private>
         </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
     </ItemGroup>
 
 </Project>

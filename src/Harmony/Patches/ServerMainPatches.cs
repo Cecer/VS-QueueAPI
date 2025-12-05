@@ -2,12 +2,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
+using JetBrains.Annotations;
 using Vintagestory.API.Server;
 using Vintagestory.Server;
 
 namespace QueueAPI.Harmony.Patches;
 
 [HarmonyPatch]
+[UsedImplicitly(ImplicitUseTargetFlags.Members)]
 public static class ServerMainPatches
 {
     /// <summary>
@@ -126,7 +128,7 @@ public static class ServerMainPatches
         );
         matcher.ThrowIfNotMatch("Could not rewrite ConnectionQueue usage to use the QueueAPI hooks in ServerMain.Process");
 
-        matcher.Repeat(matchAction: match =>
+        matcher.Repeat(_ =>
         {
             matcher.RemoveInstructions(7);
             matcher.Insert(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(InternalHooks), nameof(InternalHooks.GetWorldPopulation))));
