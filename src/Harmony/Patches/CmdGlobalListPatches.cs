@@ -22,7 +22,7 @@ public static class CmdGlobalListPatches
     ///   <code>this.server.ConnectionQueue.FindIndex(c => c.Client.Id == client.Id)</code>
     ///
     /// After:
-    ///   <code>PatchHooks.GetClientQueueIndex(client.Id)</code>
+    ///   <code>InternalHooks.GetClientQueueIndex(client.Id)</code>
     /// </remarks>
     [HarmonyTranspiler]
     [HarmonyPatch("Vintagestory.Server.CmdGlobalList", "listClients")]
@@ -135,7 +135,7 @@ public static class CmdGlobalListPatches
     ///   <code>this.server.ConnectionQueue[index]</code>
     ///
     /// After:
-    ///   <code>PatchHooks.GetClientAtQueuePosition(index + 1)</code>
+    ///   <code>InternalHooks.GetClientAtQueuePosition(index + 1)</code>
     /// </remarks>
     [HarmonyTranspiler]
     [HarmonyPatch("Vintagestory.Server.CmdGlobalList", "listClients")]

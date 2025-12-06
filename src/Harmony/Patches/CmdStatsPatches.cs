@@ -18,7 +18,7 @@ public static class CmdStatsPatches
     ///   <code>this.server.ConnectionQueue.Count</code>
     ///
     /// After:
-    ///   <code>PatchHooks.GetQueueSize()</code>
+    ///   <code>InternalHooks.GetQueueSize()</code>
     /// </remarks>
     [HarmonyTranspiler]
     [HarmonyPatch("Vintagestory.Server.CmdStats", "genStats")]

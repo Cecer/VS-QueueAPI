@@ -26,7 +26,7 @@ public static class Extensions
     /// </summary>
     /// <param name="api">The server API instance.</param>
     /// <param name="clientId">The connection ID of the client to send the position update to.</param>
-    /// <param name="position">The 0-indexed queue position to send to the client.</param>
+    /// <param name="position">The 1-indexed queue position to send to the client.</param>
     public static void SendQueuePositionUpdate(this ICoreServerAPI api, int clientId, int position)
     {
         var server = api.GetInternalServer();
@@ -52,7 +52,7 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Compares a FieldReference with a a FieldInfo.
+    /// Compares a <see cref="FieldReference"/> with a <see cref="FieldInfo"/>.
     /// </summary>
     /// <returns>Returns true if both parameters refer to the same field, false otherwise.</returns>
     public static bool Matches(this FieldReference fieldRef, FieldInfo fieldInfo)

@@ -49,7 +49,7 @@ public interface IJoinQueue
     QueuedClient? Add(QueuedClient client);
 
     /// <summary>
-    /// From <paramref name="client"/> from the queue.
+    /// Remove <paramref name="client"/> from the queue.
     /// </summary>
     /// <param name="client">The client to remove from the queue</param>
     /// <returns>True if the client was present in the queue, false otherwise.</returns>
@@ -91,26 +91,24 @@ public interface IJoinQueue
     /// <summary>
     /// Sends all scheduled position updates.
     /// </summary>
-    /// <param name="client">The client to send the update to</param>
-    /// <param name="position">The queue position to display to the client</param>
     void SendPendingPositionUpdates();
 
     /// <summary>
     /// Disconnects all clients in the queue with the specified message
     /// </summary>
-    void RemoveAll(string message);
+    void RemoveAll(string? message);
 
     /// <summary>
     /// Get the position of a client in the queue.
     /// </summary>
-    /// <param name="clientId"></param>
-    /// <returns>The position of the client in the queue or -1 if the client is not currently in the queue</returns>
+    /// <param name="clientId">The ID of the client to find the position of</param>
+    /// <returns>The 1-indexed position of the client in the queue or -1 if the client is not currently in the queue</returns>
     int GetClientPosition(int clientId);
 
     /// <summary>
-    /// Get the client at a specified position in the queue.
+    /// Get the client at position <paramref name="position"/> in the queue.
     /// </summary>
-    /// <param name="position"></param>
-    /// <returns>The client at the specified position in the queue or null if there is no client at that pposition</returns>
+    /// <param name="position">The 1-indexed position in the queue</param>
+    /// <returns>The client at the specified position in the queue or null if there is no client at that position</returns>
     ConnectedClient? GetClientAtPosition(int position);
 }

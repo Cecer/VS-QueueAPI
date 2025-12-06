@@ -10,7 +10,7 @@ public static class ServerMainAccessor
     [HarmonyPriority(Priority.Last)]
     [HarmonyReversePatch(HarmonyReversePatchType.Snapshot)]
     [HarmonyPatch(typeof(ServerMain), "FinalizePlayerIdentification")]
-    private static void FinalizePlayerIdentification_Accessor(ServerMain instance, Packet_ClientIdentification packet, ConnectedClient client, string entitlements) => throw new Exception("Unreachable code! Did Harmony not apply the reserve patch?");
+    private static void FinalizePlayerIdentification_Accessor(ServerMain instance, Packet_ClientIdentification packet, ConnectedClient client, string entitlements) => throw new Exception("Unreachable code! Did Harmony not apply the patch?");
 
     /// <summary>
     /// Exposes access to ServerMain.FinalizePlayerIdentification method. 

@@ -43,7 +43,7 @@ public class DummyQueue : IJoinQueue
     public void SendPendingPositionUpdates() { }
 
     /// <inheritdoc />
-    public void RemoveAll(string message) { }
+    public void RemoveAll(string? message) { }
 
     /// <inheritdoc />
     public int GetClientPosition(int clientId) => -1;

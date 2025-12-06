@@ -226,15 +226,18 @@ public class PriorityQueueJoinQueue(ServerMain server) : DefaultJoinQueue(server
     /// <inheritdoc />
     public override ConnectedClient? GetClientAtPosition(int position)
     {
-        if (_priorityConnectionQueue.Count >= position)
+        var index = position - 1;
+        if (_priorityConnectionQueue.Count > index)
         {
-            position -= _priorityConnectionQueue.Count;
+            return _priorityConnectionQueue[index].Client;
         }
-        if (_standardConnectionQueue.Count >= position)
+
+        index -= _priorityConnectionQueue.Count;
+        if (_standardConnectionQueue.Count > index)
         {
-            return null;
+            return _standardConnectionQueue[index].Client;
         }
-        return _standardConnectionQueue[position].Client;
+        return null;
     }
 
     protected virtual bool HasPriority(string playerUid)

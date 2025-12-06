@@ -6,7 +6,6 @@ namespace QueueAPI;
 public class QueueAPIModSystem : ModSystem
 {
     private HarmonyLib.Harmony? _harmony;
-    private ICoreServerAPI _api = null!; // Will be initialised in StartServerSide.
 
     /// <summary>
     /// The current queue handler. 
@@ -22,7 +21,6 @@ public class QueueAPIModSystem : ModSystem
 
     public override void StartServerSide(ICoreServerAPI api)
     {
-        _api = api;
         InternalHooks.DetectMainServerThread(); // There may very well be a better way to do this already in the game.
 
         _harmony = new HarmonyLib.Harmony("queueapi");

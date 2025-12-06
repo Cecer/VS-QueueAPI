@@ -100,7 +100,7 @@ public static class ServerMainPatches
     ///   <code>this.Clients.Count - this.ConnectionQueue.Count</code>
     ///
     /// After:
-    ///   <code>PatchHooks.GetJoinedPlayerCount()</code>
+    ///   <code>InternalHooks.GetJoinedPlayerCount()</code>
     /// </remarks>
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(ServerMain), "Process")]
@@ -138,7 +138,7 @@ public static class ServerMainPatches
     }
 
     /// <summary>
-    /// Injects a call to InternalHooks.OnPlayerJoined when a player actually joins. Being in the queue does not count
+    /// Injects a call to InternalHooks.OnPlayerAccepted when a player actually joins. Being in the queue does not count
     /// as having joined.
     /// </summary>
     /// <remarks>
@@ -149,7 +149,7 @@ public static class ServerMainPatches
     ///   
     /// After:
     /// <code>
-    /// InternalHooks.OnPlayerJoined(player.PlayerUID);
+    /// InternalHooks.OnPlayerAccepted(player.PlayerUID);
     /// SendPacket(player, CreatePacketIdentification(player.HasPrivilege("controlserver")));
     /// </code>
     ///
@@ -157,7 +157,7 @@ public static class ServerMainPatches
     /// </remarks>
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(ServerMain), "SendServerIdentification")]
-    private static IEnumerable<CodeInstruction> SendServerIdentification_CallOnPlayerJoined(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+    private static IEnumerable<CodeInstruction> SendServerIdentification_CallOnPlayerAccepted(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
     {
         /*
              // [4462 7 - 4462 117]
@@ -183,7 +183,7 @@ public static class ServerMainPatches
             new CodeMatch(OpCodes.Call, typeof(ServerMain).Method("CreatePacketIdentification")),
             new CodeMatch(OpCodes.Call, typeof(ServerMain).Method(nameof(ServerMain.SendPacket), [ typeof(IServerPlayer), typeof(Packet_Server) ]))
         );
-        matcher.ThrowIfNotMatch("Could not inject OnPlayerJoined call into ServerMain.SendServerIdentification");
+        matcher.ThrowIfNotMatch("Could not inject OnPlayerAccepted call into ServerMain.SendServerIdentification");
 
         matcher.Insert(
             new CodeInstruction(OpCodes.Ldarg_1).MoveLabelsFrom(matcher.Instruction),

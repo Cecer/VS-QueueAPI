@@ -79,7 +79,6 @@ public interface IQueueAPIHandler
     /// <param name="client">The client that disconnected</param>
     /// <param name="othersReason">The disconnect message shown in chat</param>
     /// <param name="theirReason">The disconnect message shown to the disconnected player</param>
-    /// <remarks>This method is at risk of being called from a non-main thread. Be careful.</remarks>
     void OnClientDisconnect(ConnectedClient client, string? othersReason, string? theirReason);
 
     /// <summary>

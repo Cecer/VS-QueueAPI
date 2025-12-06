@@ -135,7 +135,7 @@ public class DefaultQueueAPIHandler(ServerMain server) : IQueueAPIHandler
     {
         if (!Queue.IsQueueEmpty)
         {
-            server.Api.Logger.Warning($"The queue API handler was changed but the old queue was not empty. Resetting the old queue! All players in the old queue be kicked.");
+            server.Api.Logger.Warning($"The queue API handler was changed but the old queue was not empty. Resetting the old queue! All players in the old queue will be kicked.");
             Queue.RemoveAll("Queue reset");
         }
     }

@@ -5,13 +5,6 @@ using Vintagestory.Server;
 
 namespace QueueAPI;
 
-/*
- * Patch plan:
- * ServerMain.Process accesses ConnectionQueue.Count and should be replaced with a call to GetQueueSize()
- * ServerMain.PreFinalizePlayerIdentification should call OnPlayerConnect then return. The entire method should be delegated to our handler.
- * ServerMain.UpdateQueuedPlayersAfterDisconnect should call OnPlayerDisconnect then return. The entire method should be delegated to our handler.
- */
-
 internal static class InternalHooks
 {
     private static readonly ServerMain Server = (ServerMain) typeof(ServerProgram).DeclaredField("server").GetValue(null)!;
@@ -20,7 +13,7 @@ internal static class InternalHooks
     private static bool IsMainServerThread => Thread.CurrentThread == _mainServerThread;
 
     /// <summary>
-    /// Must be called at least once before <see cref="IsMainServerThread"/> is used."/>.
+    /// Must be called at least once before <see cref="IsMainServerThread"/> is used.
     /// This should already be taken care of by <see cref="QueueAPIModSystem"/>.
     /// </summary>
     internal static void DetectMainServerThread()
@@ -57,7 +50,7 @@ internal static class InternalHooks
     internal static int GetQueueSize() => Handler.Queue.QueuePopulation;
 
     /// <summary>
-    /// Returns the number of joined players in the queue.
+    /// Returns the number of players joined into the world.
     /// </summary>
     /// <remarks>This would make more sense as a readonly property, but a method call results in cleaner patching code.</remarks>
     internal static int GetWorldPopulation() => Handler.WorldPopulation;

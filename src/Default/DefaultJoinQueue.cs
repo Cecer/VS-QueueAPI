@@ -7,7 +7,7 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
 {
     private readonly Dictionary<int, int> _pendingPositionUpdates = new();
 
-    public virtual bool IsQueueEnabled  => server.Config.MaxClientsInQueue > 0;
+    public virtual bool IsQueueEnabled => server.Config.MaxClientsInQueue > 0;
     public virtual int QueuePopulation => server.ConnectionQueue.Count;
     public virtual int QueueTotalCapacity => server.Config.MaxClientsInQueue;
 
@@ -93,6 +93,11 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
         server.ConnectionQueue.RemoveAt(0);
 
         _pendingPositionUpdates.Remove(result.Client.Id);
+
+        for (int index = 0; index < server.ConnectionQueue.Count; index++)
+        {
+            SchedulePositionUpdate(server.ConnectionQueue[index], index + 1);
+        }
         return result;
     }
 
@@ -128,7 +133,7 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
     /// <inheritdoc />
     public virtual int GetClientPosition(int clientId)
     {
-        for (int index = 0; index < server.ConnectionQueue.Count; index++)
+        for (var index = 0; index < server.ConnectionQueue.Count; index++)
         {
             if (clientId == server.ConnectionQueue[index].Client.Id)
             {
@@ -142,10 +147,11 @@ public class DefaultJoinQueue(ServerMain server) : IJoinQueue
     /// <inheritdoc />
     public virtual ConnectedClient? GetClientAtPosition(int position)
     {
-        if (server.ConnectionQueue.Count >= position)
+        var index = position - 1;
+        if (server.ConnectionQueue.Count > index)
         {
-            return null;
+            return server.ConnectionQueue[index].Client;
         }
-        return server.ConnectionQueue[position].Client;
+        return null;
     }
 }
